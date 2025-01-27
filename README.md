@@ -1,6 +1,6 @@
 # AutoRAG : Automatic RAG evaluation
 
-## This implementation is based on the AutoRAG implementation [here](https://github.com/Marker-Inc-Korea/AutoRAG)
+## This implementation is using the AutoRAG implementation [here](https://github.com/Marker-Inc-Korea/AutoRAG)
 
 ## Installation
 
