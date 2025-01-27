@@ -1,0 +1,111 @@
+node_lines:
+- node_line_name: query_expansion_node_line
+  nodes:
+    - node_type: query_expansion
+      strategy:
+          metrics: [retrieval_f1, retrieval_recall, retrieval_precision]
+          speed_threshold: 10
+          top_k: 10
+      modules:
+      - module_type: pass_query_expansion
+      - module_type: query_decompose
+        generator_module_type: llama_index_llm
+        llm: openai
+        model: gpt-4o-mini
+        temperature: 0.1
+      - module_type: hyde
+        llm: openai
+        max_token: 64
+      - module_type: multi_query_expansion
+        generator_module_type: llama_index_llm
+        llm: openai
+        model: gpt-4o-mini 
+        temperature: 0.1
+- node_line_name: retrieve_node_line
+  nodes:
+    - node_type: retrieval
+      strategy:
+        metrics: [retrieval_f1, retrieval_ndcg, retrieval_map]
+      top_k: 3
+      modules:
+        - module_type: bm25
+        - module_type: vectordb
+          vectordb: default
+        - module_type: hybrid_rrf
+        - module_type: hybrid_cc
+          normalize_method: [ mm, tmm ]
+- node_line_name: post_retrieve_node_line
+  nodes:
+    - node_type: passage_reranker
+      strategy:
+        metrics: [retrieval_f1, retrieval_recall, retrieval_precision]
+        speed_threshold: 10
+      top_k: 5
+      modules:
+        - module_type: pass_reranker
+        - module_type: tart
+        - module_type: monot5
+        - module_type: upr
+        - module_type: rankgpt
+          llm: openai
+          model: gpt-4o-mini
+          temperature: 0.1
+          verbose: False
+          batch: 8
+        - module_type: colbert_reranker
+          batch: 64
+          model_name: colbert-ir/colbertv2.0
+        - module_type: sentence_transformer_reranker
+          batch: 32
+          model_name: cross-encoder/ms-marco-MiniLM-L-2-v2
+        - module_type: flag_embedding_reranker
+          batch: 32
+          model_name: BAAI/bge-reranker-large
+    - node_type: passage_filter
+      strategy:
+        metrics: [ retrieval_f1, retrieval_recall, retrieval_precision ]
+        speed_threshold: 10
+      modules:
+        - module_type: pass_passage_filter
+        - module_type: similarity_threshold_cutoff
+          threshold: 0.65
+    - node_type: passage_compressor
+      strategy:
+        metrics: [retrieval_token_f1, retrieval_token_recall, retrieval_token_precision]
+        speed_threshold: 10
+      modules:
+        - module_type: pass_compressor
+        - module_type: tree_summarize
+          llm: openai
+          model: gpt-4o-mini
+        - module_type: refine
+          llm: openai
+          model: gpt-4o-mini
+    - node_type: prompt_maker
+      strategy:
+        metrics:
+          - metric_name: meteor
+          - metric_name: rouge
+          - metric_name: sem_score
+            embedding_model: openai
+      modules:
+        - module_type: fstring
+          prompt:
+          - | 
+            Read the passages and answer the given question. \n Question: {query} \n Passage: {retrieved_contents} \n Answer :
+          - |
+            Read the passages and answer the given question. Think step by step. \n Question: {query} \n Passage: {retrieved_contents} \n Answer :
+    - node_type: generator
+      strategy:
+        metrics:
+          - metric_name: meteor
+          - metric_name: rouge
+          - metric_name: sem_score
+            embedding_model: openai
+          - metric_name: g_eval
+            metrics: [ coherence, consistency, relevance ]
+      modules:
+        - module_type: openai_llm
+          llm: gpt-4o-mini
+          temperature: [ 0.1, 1.0 ]
+          batch: 16
