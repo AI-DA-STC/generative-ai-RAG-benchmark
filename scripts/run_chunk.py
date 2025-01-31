@@ -5,14 +5,18 @@ from dotenv import load_dotenv
 
 from autorag.chunker import Chunker
 
-root_dir = os.path.dirname(os.path.realpath(__file__))
+import pyprojroot
+import sys
+root = pyprojroot.find_root(pyprojroot.has_dir("config"))
+sys.path.append(str(root))
+from config import settings
 
 
 @click.command()
 @click.option('--raw_path', type=click.Path(exists=True, dir_okay=False, file_okay=True),
-			  default=os.path.join(root_dir, "data/processed", "combined_data.parquet"))
-@click.option('--config', type=click.Path(exists=True, dir_okay=False), default=os.path.join(root_dir, "config", "chunk.yaml"))
-@click.option('--project_dir', type=click.Path(dir_okay=True), default=os.path.join(root_dir, "data/chunked_corpus"))
+			  default=os.path.join(settings.BASE, "data/processed", "combined.parquet"))
+@click.option('--config', type=click.Path(exists=True, dir_okay=False), default=os.path.join(settings.BASE, "config", "chunk.yaml"))
+@click.option('--project_dir', type=click.Path(dir_okay=True), default=os.path.join(settings.BASE, "data/chunked_corpus"))
 def main(raw_path, config, project_dir):
 	load_dotenv()
 

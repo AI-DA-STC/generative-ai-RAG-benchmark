@@ -4,12 +4,16 @@ from botocore.client import Config
 from pathlib import Path
 import pyprojroot
 import sys
+import click
 
 root = pyprojroot.find_root(pyprojroot.has_dir("config"))
 sys.path.append(str(root))
 
 from config import settings
 
+@click.command()
+@click.option('--prefix', type=str, default='static_crawler/processed/')
+@click.option('--local_dir', type=str, default='data/raw')
 def download_files(prefix: str, local_dir: str):
     """
     Download all files from a MinIO prefix/path
@@ -67,7 +71,4 @@ def download_files(prefix: str, local_dir: str):
             print(f"Error downloading {obj['Key']}: {e}")
 
 if __name__ == "__main__":
-    download_files(
-        prefix='static_crawler_test/processed/',
-        local_dir='data'
-    )
+    download_files()
