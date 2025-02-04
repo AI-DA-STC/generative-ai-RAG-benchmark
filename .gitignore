@@ -170,4 +170,4 @@ data/**
 parsed_raw/
 chunked_corpus/
 
-benchmark/**
+benchmark**/**
