@@ -30,6 +30,12 @@ root_dir = os.path.dirname(os.path.realpath(__file__))
 def main(corpus_path, raw_path, qa_size, output_path, corpus_output_path):
 	load_dotenv()
 
+	if not os.path.exists(os.path.dirname(output_path)):
+		os.makedirs(os.path.dirname(output_path))
+
+	if not os.path.exists(os.path.dirname(corpus_output_path)):
+		os.makedirs(os.path.dirname(corpus_output_path))
+
 	for path in [corpus_path, raw_path, output_path, corpus_output_path]:
 		if not path.endswith(".parquet"):
 			raise ValueError(f"Path {path} must be a parquet file.")

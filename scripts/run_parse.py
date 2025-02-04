@@ -1,13 +1,12 @@
 import os
-from pyarrow.parquet import ParquetWriter
 from datetime import datetime
 import pandas as pd
+import click
 
-def convert_to_parquet(
-    input_dir: str,
-    output_path: str = "combined.parquet",
-    include_filename: bool = True
-):
+@click.command()
+@click.option('--input_dir', default="data/raw", help="Input directory containing markdown files")
+@click.option('--output_path', default="data/processed/combined.parquet", help="Output Parquet file path")
+def convert_to_parquet(input_dir: str,output_path: str):
     """
     Combine markdown files from a directory into a Parquet file
     """
@@ -26,17 +25,13 @@ def convert_to_parquet(
                     'page': 1,  # Set page to 1
                     'last_modified_datetime': current_datetime  # Current datetime
                 })
-                
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     df = pd.DataFrame(data)
 
     # Save as Parquet
     df.to_parquet(output_path, engine='pyarrow')
     print(f"Parquet file saved to: {output_path}")
 
-    return output_path
 
 if __name__ == "__main__":
-    parquet_path = convert_to_parquet(
-        input_dir="data/raw",
-        output_path="data/processed/combined_data.parquet"
-    )
+    convert_to_parquet()
